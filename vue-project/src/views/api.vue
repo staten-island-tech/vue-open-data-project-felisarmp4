@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <businesscard v-for="(mon, index) in business" :key="mon.name" :business="mon" :id="index + 1" />
+    <businesscard v-for="(biz, index) in business" :key="biz.name_of_business" :business="biz" :id="index + 1" />
   </div>
 </template>
 
