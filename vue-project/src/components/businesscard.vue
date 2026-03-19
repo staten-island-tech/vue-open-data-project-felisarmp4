@@ -35,7 +35,7 @@ const props = defineProps({
   padding: 10px;
   margin: 20px;
   text-align: center;
-  box-shadow: 4px 4px 10px #00000073;
+  box-shadow: 4px 4px 10px #00000052;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
