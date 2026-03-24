@@ -6,7 +6,10 @@
         <button class="chart-btn">go back to cards</button>
       </RouterLink>
     </div>
-    <svg ref="svgRef"></svg>
+    <svg ref="svgref"></svg>
+    <h2 class="header">business type breakdown</h2>
+    <svg ref="pieref"></svg>
+    <div ref="tooltip" class="tooltip"></div>
   </div>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +21,9 @@
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 
-const svgRef = ref(null)
+const svgref = ref(null)
+const pieref = ref(null)
+const tooltip = ref(null)
 
 onMounted(async () => {
   const response = await fetch('https://data.cityofnewyork.us/resource/5694-9szk.json')
@@ -32,7 +37,7 @@ onMounted(async () => {
   const height = 400
   const margin = { top: 20, right: 20, bottom: 100, left: 50 }
 
-  const svg = d3.select(svgRef.value)
+  const svg = d3.select(svgref.value)
     .attr('width', width)
     .attr('height', height)
 
@@ -69,6 +74,70 @@ onMounted(async () => {
     .attr('width', x.bandwidth())
     .attr('height', d => height - margin.bottom - y(d.count))
     .attr('fill', 'teal')
+
+  // pie chart (only time ill use notes)
+
+  const piewidth = 600
+  const pieheight = 400
+  const radius = Math.min(piewidth, pieheight) / 2 - 20
+
+  const piesvg = d3.select(pieref.value)
+    .attr('width', piewidth)
+    .attr('height', pieheight)
+    .append('g')
+    .attr('transform', `translate(${piewidth / 2}, ${pieheight / 2})`)
+
+  const colors = ['#008080', '#66b2b2', '#afdae0', '#006666']
+
+  const color = d3.scaleOrdinal()
+    .domain(dataset.map(d => d.type))
+    .range(colors)
+
+  const pie = d3.pie()
+    .value(d => d.count)
+
+  const arc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius)
+
+  const labelarc = d3.arc()
+    .innerRadius(radius * 0.6)
+    .outerRadius(radius * 0.6)
+
+  const tip = d3.select(tooltip.value)
+
+  piesvg.selectAll('path')
+    .data(pie(dataset))
+    .join('path')
+    .attr('d', arc)
+    .attr('fill', d => color(d.data.type))
+    .attr('stroke', 'white')
+    .style('stroke-width', '2px')
+    .style('cursor', 'pointer')
+    .on('mouseover', (event, d) => {
+      tip
+        .style('opacity', 1)
+        .html(`<strong>${d.data.type}</strong><br/>count: ${d.data.count}`)
+    })
+    .on('mousemove', (event) => {
+      tip
+        .style('left', (event.pageX + 12) + 'px')
+        .style('top', (event.pageY - 28) + 'px')
+    })
+    .on('mouseout', () => {
+      tip.style('opacity', 0)
+    })
+
+  piesvg.selectAll('text')
+    .data(pie(dataset))
+    .join('text')
+    .attr('transform', d => `translate(${labelarc.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .style('font-family', '"Single Day", cursive')
+    .style('font-size', '11px')
+    .style('fill', 'white')
+    .text(d => d.data.count > 10 ? d.data.type : '')
 })
 </script>
 
@@ -114,5 +183,18 @@ onMounted(async () => {
 
 .chart-btn:hover {
   opacity: 0.8;
+}
+
+.tooltip {
+  position: fixed;
+  background: #000000bf;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: "Single Day", cursive;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
 </style>
