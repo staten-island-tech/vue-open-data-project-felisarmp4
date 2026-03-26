@@ -156,9 +156,7 @@ onMounted(async () => {
   justify-content: center;
   text-align: center;
   margin-top: 30px;
-  
   font-family: "Single Day", cursive;
-  font-weight: 400;
   font-style: normal;
 }
 
